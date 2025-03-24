@@ -26,15 +26,16 @@ class AuthService {
     }
   }
 
-  Future<void> signInWithEmailAndPassword(String email, String password) async {
+  Future<User?> signInWithEmailAndPassword(
+      String email, String password) async {
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return userCredential.user;
     } on FirebaseAuthException catch (e) {
-      print(e.toString());
+      throw Exception(e.message ?? "Erro ao fazer login.");
     }
-  }
-
-  Future<void> signOut() async {
-    await _auth.signOut();
   }
 }

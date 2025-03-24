@@ -7,3 +7,8 @@ class GetContactsException implements Exception {
   const GetContactsException({required this.message});
   final String message;
 }
+
+class DeleteContactsException implements Exception {
+  const DeleteContactsException({required this.message});
+  final String message;
+}

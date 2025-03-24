@@ -35,8 +35,8 @@ class _LoginPageState extends State<LoginPage> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _emailFocus = FocusNode();
-    _passwordFocus = FocusNode();
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
     super.dispose();
   }
 
@@ -109,17 +109,26 @@ class _LoginPageState extends State<LoginPage> {
                       keyboardType: TextInputType.visiblePassword,
                       textInputAction: TextInputAction.done,
                       decoration: InputDecoration(
-                          suffixIcon: IconButton(
-                            onPressed: () {
-                              setState(() {
-                                _isObscurePassword = !_isObscurePassword;
-                              });
-                            },
-                            icon: _isObscurePassword
-                                ? const Icon(Icons.visibility_outlined)
-                                : const Icon(Icons.visibility_off_outlined),
-                          ),
-                          label: Text("Password")),
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _isObscurePassword = !_isObscurePassword;
+                            });
+                          },
+                          icon: _isObscurePassword
+                              ? const Icon(Icons.visibility_outlined)
+                              : const Icon(Icons.visibility_off_outlined),
+                        ),
+                        label: Text("Password"),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.white),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.white),
+                        ),
+                      ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return "Password obrigatório.";
@@ -159,12 +168,23 @@ class _LoginPageState extends State<LoginPage> {
                             _emailController.text,
                             _passwordController.text,
                           );
+                          context.pushReplacement(HomePage.routeName);
                         } else {
-                          await firebaseService.signInWithEmailAndPassword(
+                          final user =
+                              await firebaseService.signInWithEmailAndPassword(
                             _emailController.text,
                             _passwordController.text,
                           );
-                          context.go(HomePage.routeName);
+
+                          if (user != null) {
+                            context.pushReplacement(HomePage.routeName);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      "Falha ao fazer login. Verifique suas credenciais.")),
+                            );
+                          }
                         }
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(

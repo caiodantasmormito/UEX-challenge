@@ -9,3 +9,6 @@ final class AddContactsFailure extends Failure {
 final class GetContactsFailure extends Failure {
   const GetContactsFailure({super.message});
 }
+final class DeleteContactsFailure extends Failure {
+  const DeleteContactsFailure({super.message});
+}

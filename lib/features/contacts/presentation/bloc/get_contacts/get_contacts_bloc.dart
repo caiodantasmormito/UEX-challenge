@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uex_app/core/domain/usecase/usecase.dart';
 import 'package:uex_app/features/contacts/domain/entities/contacts_entity.dart';
 import 'package:uex_app/features/contacts/domain/usecases/get_contacts_usecase.dart';
 
@@ -12,7 +11,7 @@ class GetContactsBloc extends Bloc<GetContactsEvent, GetContactsState> {
   GetContactsBloc({required this.useCase}) : super(GetContactsInitial()) {
     on<GetDataContacts>((event, emit) async {
       emit(GetContactsLoading());
-      final (failure, result) = await useCase(NoParams());
+      final (failure, result) = await useCase(event.userId);
 
       if (failure == null) {
         emit(GetContactsSuccess(contacts: result!));
@@ -20,5 +19,7 @@ class GetContactsBloc extends Bloc<GetContactsEvent, GetContactsState> {
         emit(GetContactsError(message: failure.message));
       }
     });
+    
   }
+  
 }

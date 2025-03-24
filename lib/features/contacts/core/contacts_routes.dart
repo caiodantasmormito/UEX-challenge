@@ -3,10 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:uex_app/features/address/domain/usecases/get_address_usecase.dart';
 import 'package:uex_app/features/address/presentation/bloc/get_address_bloc.dart';
 import 'package:uex_app/features/contacts/domain/usecases/add_contacts_usecase.dart';
+import 'package:uex_app/features/contacts/domain/usecases/delete_contacts_usecase.dart';
 import 'package:uex_app/features/contacts/domain/usecases/get_contacts_usecase.dart';
 import 'package:uex_app/features/contacts/presentation/bloc/add_contacts/add_contacts_bloc.dart';
+import 'package:uex_app/features/contacts/presentation/bloc/delete_contacts/delete_contacts_bloc.dart';
 import 'package:uex_app/features/contacts/presentation/bloc/get_contacts/get_contacts_bloc.dart';
+import 'package:uex_app/features/contacts/presentation/bloc/location/location_bloc.dart';
 import 'package:uex_app/features/contacts/presentation/pages/add_contacts_page.dart';
+import 'package:uex_app/features/contacts/presentation/pages/map_selector_page.dart';
 import 'package:uex_app/features/home/presentation/pages/home_page.dart';
 
 sealed class ContactsRoutes {
@@ -23,6 +27,11 @@ sealed class ContactsRoutes {
           BlocProvider<GetContactsBloc>(
             create: (context) => GetContactsBloc(
               useCase: context.read<GetContactsUsecase>(),
+            ),
+          ),
+          BlocProvider<DeleteContactsBloc>(
+            create: (context) => DeleteContactsBloc(
+              useCase: context.read<DeleteContactsUsecase>(),
             ),
           ),
           BlocProvider<GetAddressBloc>(
@@ -48,8 +57,33 @@ sealed class ContactsRoutes {
               useCase: context.read<GetAddressUsecase>(),
             ),
           ),
+          BlocProvider<LocationBloc>(
+            create: (context) => LocationBloc(),
+          ),
         ],
         child: const AddContactsPage(),
+      ),
+    ),
+    GoRoute(
+      path: MapSelector.routeName,
+      builder: (context, state) => MultiBlocProvider(
+        providers: [
+          BlocProvider<AddContactsBloc>(
+            create: (context) => AddContactsBloc(
+              useCase: context.read<AddContactsUsecase>(),
+            ),
+          ),
+          BlocProvider<GetAddressBloc>(
+            create: (context) => GetAddressBloc(
+              useCase: context.read<GetAddressUsecase>(),
+            ),
+          ),
+          
+          BlocProvider<LocationBloc>(
+            create: (context) => LocationBloc(),
+          ),
+        ],
+        child: const MapSelector(),
       ),
     ),
   ];

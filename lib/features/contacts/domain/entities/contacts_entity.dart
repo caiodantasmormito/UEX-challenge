@@ -1,73 +1,93 @@
 import 'package:equatable/equatable.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:uex_app/features/contacts/data/models/contacts_model.dart';
 
 base class ContactsEntity extends Equatable {
+  final String id;
   final String name;
   final String address;
   final String cpf;
   final String cep;
-  
-  final String longitude;
-  final String latitude;
+  final LatLng coordinates;
+  final String district;
+  final String city;
+  final String uf;
+  final String phone;
 
-  const ContactsEntity({
-    
-    required this.longitude,
-    required this.name,
-    required this.cep,
-    required this.latitude,
-    required this.address,
-    required this.cpf,
-  });
+  const ContactsEntity(
+      {required this.id,
+        required this.district,
+      required this.city,
+      required this.uf,
+      required this.name,
+      required this.cep,
+      required this.coordinates,
+      required this.address,
+      required this.cpf,
+      required this.phone});
 
-  const ContactsEntity.empty({
-    this.name = '',
-    this.cep = '',
-    this.latitude = '',
-    this.address = '',
-    this.cpf = '',
-    
-    this.longitude = '',
-  });
+  const ContactsEntity.empty()
+      : name = '',
+      id = '',
+        cep = '',
+        coordinates = const LatLng(0, 0),
+        address = '',
+        cpf = '',
+        district = '',
+        city = '',
+        uf = '',
+        phone = '';
 
   @override
   List<Object?> get props => [
         name,
+        id,
         cep,
-        latitude,
+        coordinates,
         cpf,
         address,
-        longitude,
-        
+        uf,
+        district,
+        city,
+        phone,
       ];
 
   ContactsEntity copyWith({
     String? name,
+    String? id,
     String? cep,
-    String? latitude,
+    LatLng? coordinates,
     String? cpf,
     String? address,
-   
-    String? longitude,
+    String? city,
+    String? district,
+    String? uf,
+    String? phone,
   }) {
     return ContactsEntity(
+      id: id ?? this.id,
       name: name ?? this.name,
       cep: cep ?? this.cep,
-      latitude: latitude ?? this.latitude,
+      coordinates: coordinates ?? this.coordinates,
       address: address ?? this.address,
-      cpf: cpf ?? this.cpf, 
-      
-      longitude: longitude ?? this.longitude,
+      cpf: cpf ?? this.cpf,
+      city: city ?? this.city,
+      district: district ?? this.district,
+      uf: uf ?? this.uf,
+      phone: phone ?? this.phone,
     );
   }
 
   ContactsModel toModel() => ContactsModel(
         name: name,
+        id: id,
         cep: cep,
-        latitude: latitude,
+        coordinates: coordinates,
         cpf: cpf,
         address: address,
-        
-        longitude: longitude,
+        uf: uf,
+        district: district,
+        city: city,
+        phone: phone,
       );
 }

@@ -5,8 +5,10 @@ sealed class GetContactsEvent extends Equatable {
 }
 
 final class GetDataContacts extends GetContactsEvent {
-  const GetDataContacts();
+  final String userId;
+  const GetDataContacts({required this.userId});
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [userId];
 }
+
