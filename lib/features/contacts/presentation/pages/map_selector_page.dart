@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geocoding/geocoding.dart' as geo;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../bloc/location/location_bloc.dart';
 
 class MapSelector extends StatefulWidget {
-  const MapSelector({super.key});
+  final String? initialAddress;
+
+  const MapSelector({super.key, this.initialAddress});
   static const String routeName = '/maps';
 
   @override
@@ -13,39 +16,74 @@ class MapSelector extends StatefulWidget {
 }
 
 class _MapSelectorState extends State<MapSelector> {
+  late GoogleMapController _mapController;
+  final TextEditingController _addressController = TextEditingController();
+
   @override
   void initState() {
-    context.read<LocationBloc>().add(GetCurrentLocation());
     super.initState();
+    if (widget.initialAddress != null) {
+      _addressController.text = widget.initialAddress!;
+      _searchAddress();
+    } else {
+      context.read<LocationBloc>().add(GetCurrentLocation());
+    }
+  }
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    _addressController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _searchAddress() async {
+    if (_addressController.text.isEmpty) return;
+
+    try {
+      final locations = await geo.locationFromAddress(_addressController.text);
+      if (locations.isNotEmpty) {
+        final location = locations.first;
+        final position = LatLng(location.latitude, location.longitude);
+
+        _mapController.animateCamera(
+          CameraUpdate.newLatLngZoom(position, 15),
+        );
+
+        context.read<LocationBloc>().add(UpdateSelectedLocation(position));
+      }
+    } catch (e) {
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Endereço não encontrado'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<LocationBloc, LocationState>(
       builder: (context, state) {
-        return Column(
-          children: [
-            const Text(
-              'Selecione a localização no mapa:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              height: 250,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(8),
+        return Scaffold(
+          appBar: AppBar(
+            title: Text('Localização do contato'),
+          ),
+          body: Column(
+            children: [
+              Container(
+                height: MediaQuery.of(context).size.height * 0.8,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: _buildMapContent(state, context),
               ),
-              child: _buildMapContent(state, context),
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.my_location),
-              label: const Text('Usar minha localização atual'),
-              onPressed: () =>
-                  context.read<LocationBloc>().add(GetCurrentLocation()),
-            ),
-          ],
+              const SizedBox(height: 16),
+            ],
+          ),
         );
       },
     );
@@ -56,7 +94,8 @@ class _MapSelectorState extends State<MapSelector> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final position = state.effectivePosition ?? LatLng(-23.5505, -46.6333);
+    final position =
+        state.effectivePosition ?? const LatLng(-23.5505, -46.6333);
 
     return GoogleMap(
       initialCameraPosition: CameraPosition(
@@ -79,16 +118,20 @@ class _MapSelectorState extends State<MapSelector> {
         context.read<LocationBloc>().add(UpdateSelectedLocation(position));
       },
       onMapCreated: (controller) {
-        controller.animateCamera(
-          CameraUpdate.newLatLng(position),
+        _mapController = controller;
+        _mapController.animateCamera(
+          CameraUpdate.newLatLngZoom(position, _calculateZoom(state)),
         );
       },
+      scrollGesturesEnabled: true,
+      zoomGesturesEnabled: true,
+      myLocationEnabled: true,
     );
   }
 
   double _calculateZoom(LocationState state) {
     if (state.selectedPosition != null) return 15;
-    if (state.currentPosition != null) return 12;
-    return 10;
+    if (state.currentPosition != null) return 14;
+    return 12;
   }
 }

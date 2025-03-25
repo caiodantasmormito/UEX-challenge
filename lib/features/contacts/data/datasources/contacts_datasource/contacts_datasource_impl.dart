@@ -27,7 +27,7 @@ class ContactsDatasourceImpl implements ContactsDatasource {
   @override
   Future<void> deleteContact(String contactId) async {
     try {
-      print("Excluindo contato com ID: $contactId");
+      
       await FirebaseFirestore.instance
           .collection("contacts")
           .doc(contactId)
@@ -48,14 +48,13 @@ class ContactsDatasourceImpl implements ContactsDatasource {
       "name": contactsModel.name,
       "cpf": contactsModel.cpf,
       "address": contactsModel.address,
-      "latitude": contactsModel.coordinates.latitude,
-      "longitude": contactsModel.coordinates.longitude,
       "cep": contactsModel.cep,
       "userId": user!.uid,
       "phone": contactsModel.phone,
       "city": contactsModel.city,
       "district": contactsModel.district,
       "uf": contactsModel.uf,
+      "number": contactsModel.number,
     });
   }
 

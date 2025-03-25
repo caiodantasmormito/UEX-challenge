@@ -50,6 +50,9 @@ sealed class ContactsRoutes {
               useCase: context.read<DeleteContactsUsecase>(),
             ),
           ),
+          BlocProvider<LocationBloc>(
+            create: (context) => LocationBloc(),
+          ),
         ],
         child: const HomePage(),
       ),

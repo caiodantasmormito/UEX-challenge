@@ -10,6 +10,7 @@ import 'package:uex_app/features/address/core/address_provider.dart';
 import 'package:uex_app/features/contacts/core/contacts_provider.dart';
 import 'package:uex_app/features/contacts/domain/usecases/delete_contacts_usecase.dart';
 import 'package:uex_app/features/contacts/presentation/bloc/delete_contacts/delete_contacts_bloc.dart';
+import 'package:uex_app/features/contacts/presentation/bloc/location/location_bloc.dart';
 
 class AppWidget extends StatelessWidget {
   final SharedPreferences preferences;
@@ -36,6 +37,9 @@ class AppWidget extends StatelessWidget {
             create: (context) => DeleteContactsBloc(
               useCase: context.read<DeleteContactsUsecase>(),
             ),
+          ),
+          BlocProvider<LocationBloc>(
+            create: (context) => LocationBloc(),
           ),
         ],
         child: MaterialApp.router(

@@ -8,7 +8,8 @@ base class ContactsEntity extends Equatable {
   final String address;
   final String cpf;
   final String cep;
-  final LatLng coordinates;
+  final String number;
+
   final String district;
   final String city;
   final String uf;
@@ -16,21 +17,21 @@ base class ContactsEntity extends Equatable {
 
   const ContactsEntity(
       {required this.id,
-        required this.district,
+      required this.number,
+      required this.district,
       required this.city,
       required this.uf,
       required this.name,
       required this.cep,
-      required this.coordinates,
       required this.address,
       required this.cpf,
       required this.phone});
 
   const ContactsEntity.empty()
       : name = '',
-      id = '',
+      number = '',
+        id = '',
         cep = '',
-        coordinates = const LatLng(0, 0),
         address = '',
         cpf = '',
         district = '',
@@ -43,32 +44,32 @@ base class ContactsEntity extends Equatable {
         name,
         id,
         cep,
-        coordinates,
         cpf,
         address,
         uf,
         district,
         city,
         phone,
+        number,
       ];
 
   ContactsEntity copyWith({
     String? name,
     String? id,
     String? cep,
-    LatLng? coordinates,
     String? cpf,
     String? address,
     String? city,
     String? district,
     String? uf,
     String? phone,
+    String? number,
   }) {
     return ContactsEntity(
       id: id ?? this.id,
+      number: number ?? this.number,
       name: name ?? this.name,
       cep: cep ?? this.cep,
-      coordinates: coordinates ?? this.coordinates,
       address: address ?? this.address,
       cpf: cpf ?? this.cpf,
       city: city ?? this.city,
@@ -82,12 +83,12 @@ base class ContactsEntity extends Equatable {
         name: name,
         id: id,
         cep: cep,
-        coordinates: coordinates,
         cpf: cpf,
         address: address,
         uf: uf,
         district: district,
         city: city,
         phone: phone,
+        number: number,
       );
 }

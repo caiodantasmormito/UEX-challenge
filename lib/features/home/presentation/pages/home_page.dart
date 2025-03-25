@@ -7,6 +7,7 @@ import 'package:uex_app/features/contacts/presentation/bloc/delete_contacts/dele
 import 'package:uex_app/features/contacts/presentation/bloc/get_contacts/get_contacts_bloc.dart';
 import 'package:uex_app/features/contacts/presentation/pages/add_contacts_page.dart';
 import 'package:uex_app/features/contacts/presentation/pages/edit_contacts_page.dart';
+import 'package:uex_app/features/contacts/presentation/pages/map_selector_page.dart';
 import 'package:uex_app/features/login/presentation/pages/login_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -189,58 +190,78 @@ class _HomePageState extends State<HomePage> {
                         itemCount: filteredContacts.length,
                         itemBuilder: (context, index) {
                           final contact = filteredContacts[index];
-                          return Card(
-                            elevation: 3,
-                            color: Colors.white,
-                            margin: EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical:
-                                    MediaQuery.of(context).size.height * 0.002),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: Colors.white,
-                                child: Icon(
-                                  Icons.person,
-                                  color: Colors.black,
+                          return InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MapSelector(
+                                    initialAddress:
+                                        '${contact.address}, ${contact.number}, ${contact.city}, ${contact.uf}',
+                                  ),
                                 ),
-                              ),
-                              title: Text(
-                                contact.name,
-                                style: TextStyle(
+                              );
+                            },
+                            child: Card(
+                              elevation: 3,
+                              color: Colors.white,
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: MediaQuery.of(context).size.height *
+                                      0.002),
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: Colors.white,
+                                  child: Icon(
+                                    Icons.person,
                                     color: Colors.black,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Column(
-                                spacing: 4,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(contact.address),
-                                  Text('${contact.city}/${contact.uf}'),
-                                  Text('CPF: ${contact.cpf}'),
-                                  Text('Tel: ${contact.phone}'),
-                                ],
-                              ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit,
-                                        color: Colors.black),
-                                    onPressed: () async {
-                                      await context.push(
-                                        UpdateContactsPage.routeName,
-                                        extra: contact,
-                                      );
-                                    },
                                   ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete,
-                                        color: Colors.red),
-                                    onPressed: () {
-                                      _showDeleteDialog(context, contact.id);
-                                    },
-                                  ),
-                                ],
+                                ),
+                                title: Text(
+                                  contact.name,
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Column(
+                                  spacing: 4,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                        '${contact.address}, ${contact.number}'),
+                                    Text('${contact.city}/${contact.uf}'),
+                                    Text('CPF: ${contact.cpf}'),
+                                    Text('Tel: ${contact.phone}'),
+                                  ],
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit,
+                                          color: Colors.black),
+                                      onPressed: () async {
+                                        await context.push(
+                                          UpdateContactsPage.routeName,
+                                          extra: contact,
+                                        );
+                                        final userId = FirebaseAuth
+                                            .instance.currentUser?.uid;
+                                        if (userId != null) {
+                                          context.read<GetContactsBloc>().add(
+                                              GetDataContacts(userId: userId));
+                                        }
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete,
+                                          color: Colors.red),
+                                      onPressed: () {
+                                        _showDeleteDialog(context, contact.id);
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           );
