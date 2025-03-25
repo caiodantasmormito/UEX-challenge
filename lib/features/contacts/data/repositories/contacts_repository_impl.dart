@@ -50,4 +50,13 @@ class ContactsRepositoryImpl implements ContactsRepository {
       return (DeleteContactsFailure(message: error.message), null);
     }
   }
+
+  @override
+  Future<bool> verifyCpfExists(String cpf) async {
+    try {
+      return await _contactsDataSource.verifyCpfExists(cpf);
+    } catch (e) {
+      throw AddContactsException(message: 'Erro ao verificar CPF');
+    }
+  }
 }

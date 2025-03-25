@@ -254,7 +254,7 @@ class _AddContactsPageState extends State<AddContactsPage> {
                       if (value == null || value.isEmpty) {
                         return 'CPF é obrigatório';
                       } else if (!CPFValidator.isValid(value)) {
-                        return 'CPF inválido';
+                        return 'CPF inexistente';
                       }
                       return null;
                     },
@@ -451,6 +451,16 @@ class _AddContactsPageState extends State<AddContactsPage> {
                       return ElevatedButton(
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
+                            if (!CPFValidator.isValid(_cpfController.text)) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content:
+                                      Text('Por favor, insira um CPF válido'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
                             _addContactsBloc.add(
                               CreateContacts(
                                 ContactsEntity(

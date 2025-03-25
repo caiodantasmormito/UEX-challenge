@@ -17,7 +17,11 @@ class AddContactsBloc extends Bloc<AddContactsEvent, AddContactsState> {
       if (failure == null) {
         emit(AddContactsSuccess());
       } else {
-        emit(AddContactsError(message: failure.message));
+        final errorMessage = failure is AddContactsError &&
+                failure.message == 'CPF já cadastrado'
+            ? 'Já existe um contato com este CPF'
+            : failure.message;
+        emit(AddContactsError(message: errorMessage));
       }
     });
   }

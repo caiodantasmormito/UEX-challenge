@@ -7,5 +7,6 @@ abstract class ContactsRepository {
       {required ContactsEntity contactsEntity});
   Future<(Failure?, List<ContactsEntity>?)> getContacts(String userId);
   Future<(Failure?, NoParams?)> deleteContact(String contactId);
+  Future<bool> verifyCpfExists(String cpf);
 
 }

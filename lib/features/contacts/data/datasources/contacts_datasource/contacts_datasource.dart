@@ -6,4 +6,5 @@ abstract interface class ContactsDatasource {
   });
   Future<List<ContactsModel>> getContacts(String userId);
   Future<void> deleteContact(String contactId);
+  Future<bool> verifyCpfExists(String cpf);
 }
