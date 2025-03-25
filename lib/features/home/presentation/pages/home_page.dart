@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uex_app/core/firebase/firebase.dart';
 import 'package:uex_app/features/contacts/presentation/bloc/delete_contacts/delete_contacts_bloc.dart';
 import 'package:uex_app/features/contacts/presentation/bloc/get_contacts/get_contacts_bloc.dart';
 import 'package:uex_app/features/contacts/presentation/pages/add_contacts_page.dart';
@@ -26,6 +27,11 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user == null) {
+        Future.microtask(() => GoRouter.of(context).go(LoginPage.routeName));
+      }
+    });
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       _userId = user.uid;
@@ -88,7 +94,15 @@ class _HomePageState extends State<HomePage> {
               FirebaseAuth.instance.signOut();
               context.pushReplacement(LoginPage.routeName);
             },
-          )
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: () {
+              final authService = AuthService();
+
+              _showDeleteAccountDialog(context, authService);
+            },
+          ),
         ],
       ),
       body: RefreshIndicator(
@@ -241,33 +255,6 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           const Spacer(),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              onPressed: () async {
-                                await context.push(AddContactsPage.routeName);
-                                final userId =
-                                    FirebaseAuth.instance.currentUser?.uid;
-                                if (userId != null) {
-                                  context
-                                      .read<GetContactsBloc>()
-                                      .add(GetDataContacts(userId: userId));
-                                }
-                              },
-                              child: const Text(
-                                'Criar primeiro contato',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            ),
-                          ),
-                          const Spacer(),
                         ],
                       ),
                     );
@@ -309,6 +296,67 @@ class _HomePageState extends State<HomePage> {
               'Excluir',
               style: TextStyle(color: Colors.red),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context, AuthService authService) {
+    TextEditingController passwordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Excluir conta'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Para excluir sua conta, insira sua senha abaixo.'),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Senha'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final password = passwordController.text;
+              Navigator.pop(context);
+
+              try {
+                await authService.deleteAccount(password);
+
+                print("Conta excluída com sucesso");
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Conta excluída com sucesso')),
+                  );
+                  await FirebaseAuth.instance.signOut();
+                  await Future.delayed(const Duration(milliseconds: 300));
+
+                  if (context.mounted) {
+                    context.go(LoginPage.routeName);
+                  }
+                }
+              } catch (e) {
+                print("Erro ao excluir a conta: $e");
+
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Senha incorreta')),
+                  );
+                }
+              }
+            },
+            child: const Text('Excluir', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

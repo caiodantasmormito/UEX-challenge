@@ -38,4 +38,24 @@ class AuthService {
       throw Exception(e.message ?? "Erro ao fazer login.");
     }
   }
+
+  Future<void> deleteAccount(String password) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception("Nenhum usuário autenticado.");
+      }
+
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: password,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+      await user.delete();
+      await _auth.signOut();
+    } on FirebaseAuthException catch (e) {
+      throw Exception(e.message ?? "Erro ao excluir a conta.");
+    }
+  }
 }
