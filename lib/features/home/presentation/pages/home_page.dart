@@ -21,6 +21,8 @@ class _HomePageState extends State<HomePage> {
   String _searchText = '';
   String? _userId;
 
+  bool _isAscending = true;
+
   @override
   void initState() {
     super.initState();
@@ -46,8 +48,6 @@ class _HomePageState extends State<HomePage> {
   Future<void> _refreshContacts() async {
     if (_userId != null) {
       context.read<GetContactsBloc>().add(GetDataContacts(userId: _userId!));
-    } else {
-      debugPrint('Erro: _userId está nulo.');
     }
   }
 
@@ -95,24 +95,38 @@ class _HomePageState extends State<HomePage> {
         onRefresh: _refreshContacts,
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Pesquisar por nome ou CPF',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Pesquisar por nome ou CPF',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      prefixIcon: const Icon(Icons.search),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        _searchText = value.toLowerCase();
+                      });
+                    },
                   ),
-                  prefixIcon: const Icon(Icons.search),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    _searchText = value.toLowerCase();
-                  });
-                },
-              ),
+                IconButton(
+                  icon: Icon(
+                    _isAscending ? Icons.sort_by_alpha : Icons.sort,
+                    color: Colors.black,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isAscending = !_isAscending;
+                    });
+                  },
+                ),
+              ],
             ),
             Expanded(
               child: BlocConsumer<GetContactsBloc, GetContactsState>(
@@ -137,6 +151,10 @@ class _HomePageState extends State<HomePage> {
                       return contact.name.toLowerCase().contains(_searchText) ||
                           contact.cpf.contains(_searchText);
                     }).toList();
+
+                    filteredContacts.sort((a, b) => _isAscending
+                        ? a.name.compareTo(b.name)
+                        : b.name.compareTo(a.name));
 
                     if (filteredContacts.isNotEmpty) {
                       return ListView.builder(
