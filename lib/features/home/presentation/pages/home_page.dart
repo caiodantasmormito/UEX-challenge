@@ -88,20 +88,29 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.white,
         title: const Text('Contatos'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              FirebaseAuth.instance.signOut();
-              context.pushReplacement(LoginPage.routeName);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
-            onPressed: () {
-              final authService = AuthService();
+          PopupMenuButton<int>(
+            color: Colors.white,
+            icon: const Icon(Icons.menu, color: Colors.black),
+            onSelected: (value) {
+              if (value == 0) {
+                FirebaseAuth.instance.signOut();
+                context.pushReplacement(LoginPage.routeName);
+              } else if (value == 1) {
+                final authService = AuthService();
 
-              _showDeleteAccountDialog(context, authService);
+                _showDeleteAccountDialog(context, authService);
+              }
             },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 0,
+                child: Text('Sair'),
+              ),
+              const PopupMenuItem(
+                value: 1,
+                child: Text('Excluir conta'),
+              ),
+            ],
           ),
         ],
       ),
@@ -303,22 +312,33 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showDeleteAccountDialog(BuildContext context, AuthService authService) {
-    TextEditingController passwordController = TextEditingController();
+    final TextEditingController passwordController = TextEditingController();
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
         title: const Text('Excluir conta'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Para excluir sua conta, insira sua senha abaixo.'),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Senha'),
-            ),
-          ],
+        content: Form(
+          key: formKey, // Associa o Form ao GlobalKey
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Para excluir sua conta, insira sua senha abaixo.'),
+              TextFormField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: 'Senha'),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return "Digite sua senha";
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -327,32 +347,32 @@ class _HomePageState extends State<HomePage> {
           ),
           TextButton(
             onPressed: () async {
-              final password = passwordController.text;
-              Navigator.pop(context);
+              if (formKey.currentState!.validate()) {
+                final password = passwordController.text;
 
-              try {
-                await authService.deleteAccount(password);
-
-                print("Conta excluída com sucesso");
-
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Conta excluída com sucesso')),
-                  );
-                  await FirebaseAuth.instance.signOut();
-                  await Future.delayed(const Duration(milliseconds: 300));
+                try {
+                  await authService.deleteAccount(password);
 
                   if (context.mounted) {
-                    context.go(LoginPage.routeName);
-                  }
-                }
-              } catch (e) {
-                print("Erro ao excluir a conta: $e");
+                    Navigator.pop(context);
 
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Senha incorreta')),
-                  );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Conta excluída com sucesso')),
+                    );
+                    await FirebaseAuth.instance.signOut();
+                    await Future.delayed(const Duration(milliseconds: 300));
+
+                    if (context.mounted) {
+                      context.go(LoginPage.routeName);
+                    }
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Senha incorreta')),
+                    );
+                  }
                 }
               }
             },
