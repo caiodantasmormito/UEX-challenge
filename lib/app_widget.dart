@@ -7,8 +7,6 @@ import 'package:uex_app/config/themes/dark_theme.dart';
 import 'package:uex_app/config/themes/light_theme.dart';
 import 'package:uex_app/core/infra/http_client.dart';
 import 'package:uex_app/features/address/core/address_provider.dart';
-import 'package:uex_app/features/address/domain/usecases/get_address_by_uf_usecase.dart';
-import 'package:uex_app/features/address/presentation/bloc/get_address_by_uf/get_address_by_uf_bloc.dart';
 import 'package:uex_app/features/contacts/core/contacts_provider.dart';
 import 'package:uex_app/features/contacts/domain/usecases/delete_contacts_usecase.dart';
 import 'package:uex_app/features/contacts/presentation/bloc/delete_contacts/delete_contacts_bloc.dart';

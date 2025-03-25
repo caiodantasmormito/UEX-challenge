@@ -54,6 +54,30 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          onPressed: () async {
+            await context.push(AddContactsPage.routeName);
+            final userId = FirebaseAuth.instance.currentUser?.uid;
+            if (userId != null) {
+              context
+                  .read<GetContactsBloc>()
+                  .add(GetDataContacts(userId: userId));
+            }
+          },
+          child: const Text(
+            'Criar contato',
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+      ),
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: const Text('Contatos'),
@@ -123,7 +147,7 @@ class _HomePageState extends State<HomePage> {
                             elevation: 3,
                             color: Colors.white,
                             margin: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
+                                horizontal: 16, vertical: 5),
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: Colors.white,
