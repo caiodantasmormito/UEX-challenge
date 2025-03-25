@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uex_app/features/address/domain/usecases/get_address_by_uf_usecase.dart';
 import 'package:uex_app/features/address/domain/usecases/get_address_usecase.dart';
 import 'package:uex_app/features/address/presentation/bloc/get_address_bloc.dart';
+import 'package:uex_app/features/address/presentation/bloc/get_address_by_uf/get_address_by_uf_bloc.dart';
 import 'package:uex_app/features/contacts/domain/usecases/add_contacts_usecase.dart';
 import 'package:uex_app/features/contacts/domain/usecases/delete_contacts_usecase.dart';
 import 'package:uex_app/features/contacts/domain/usecases/get_contacts_usecase.dart';
@@ -47,6 +49,11 @@ sealed class ContactsRoutes {
       path: AddContactsPage.routeName,
       builder: (context, state) => MultiBlocProvider(
         providers: [
+          BlocProvider<GetAddressByUfBloc>(
+            create: (context) => GetAddressByUfBloc(
+              useCase: context.read<GetAddressByUfUsecase>(),
+            ),
+          ),
           BlocProvider<AddContactsBloc>(
             create: (context) => AddContactsBloc(
               useCase: context.read<AddContactsUsecase>(),
@@ -78,7 +85,6 @@ sealed class ContactsRoutes {
               useCase: context.read<GetAddressUsecase>(),
             ),
           ),
-          
           BlocProvider<LocationBloc>(
             create: (context) => LocationBloc(),
           ),

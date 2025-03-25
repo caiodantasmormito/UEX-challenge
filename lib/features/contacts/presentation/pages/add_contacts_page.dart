@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
-import 'package:uex_app/core/utils/string_utils.dart';
+import 'package:uex_app/features/address/domain/entities/address_entity.dart';
+import 'package:uex_app/features/address/domain/usecases/get_address_by_uf_usecase.dart';
 import 'package:uex_app/features/address/presentation/bloc/get_address_bloc.dart';
+import 'package:uex_app/features/address/presentation/bloc/get_address_by_uf/get_address_by_uf_bloc.dart';
 import 'package:uex_app/features/contacts/domain/entities/contacts_entity.dart';
 
 import '../bloc/add_contacts/add_contacts_bloc.dart';
@@ -18,6 +20,37 @@ class AddContactsPage extends StatefulWidget {
 }
 
 class _AddContactsPageState extends State<AddContactsPage> {
+  final List<String> estadosBrasileiros = [
+    'AC',
+    'AL',
+    'AP',
+    'AM',
+    'BA',
+    'CE',
+    'DF',
+    'ES',
+    'GO',
+    'MA',
+    'MT',
+    'MS',
+    'MG',
+    'PA',
+    'PB',
+    'PR',
+    'PE',
+    'PI',
+    'RJ',
+    'RN',
+    'RS',
+    'RO',
+    'RR',
+    'SC',
+    'SP',
+    'SE',
+    'TO'
+  ];
+
+  String? selectedEstado;
   late final TextEditingController _nameController;
   late final TextEditingController _cpfController;
   late final TextEditingController _longitudeController;
@@ -40,6 +73,7 @@ class _AddContactsPageState extends State<AddContactsPage> {
   late final FocusNode _addressFocus;
   late final GlobalKey<FormState> _formKey;
   late final AddContactsBloc _addContactsBloc;
+
   MaskTextInputFormatter cpfFormatter = MaskTextInputFormatter(
     mask: '###.###.###-##',
     filter: {'#': RegExp('[0-9]')},
@@ -65,7 +99,6 @@ class _AddContactsPageState extends State<AddContactsPage> {
     _addressController = TextEditingController();
     _latitudeController = TextEditingController();
     _phoneController = TextEditingController();
-    //context.read<LocationBloc>().add(GetCurrentLocation());
 
     _formKey = GlobalKey<FormState>();
     _cityFocus = FocusNode();
@@ -78,10 +111,8 @@ class _AddContactsPageState extends State<AddContactsPage> {
     _latitudeFocus = FocusNode();
     _cepFocus = FocusNode();
     _addressFocus = FocusNode();
-    //context.read<GetContactsBloc>().add(GetDataContacts());
 
     _addContactsBloc = context.read<AddContactsBloc>();
-
     super.initState();
   }
 
@@ -104,8 +135,62 @@ class _AddContactsPageState extends State<AddContactsPage> {
     _cepFocus.dispose();
     _addressFocus.dispose();
     _districtFocus.dispose();
+    _cityFocus.dispose();
+    _stateFocus.dispose();
 
     super.dispose();
+  }
+
+  void _buscarEnderecos() {
+    if (selectedEstado != null &&
+        _cityController.text.isNotEmpty &&
+        _addressController.text.isNotEmpty) {
+      context.read<GetAddressByUfBloc>().add(AddressByUf(
+            params: GetAddressParams(
+              uf: selectedEstado!,
+              city: _cityController.text,
+              address: _addressController.text,
+            ),
+          ));
+    }
+  }
+
+  void _mostrarDialogoEnderecos(List<AddressEntity> addresses) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Selecione um endereço'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: addresses.length,
+            itemBuilder: (context, index) {
+              final address = addresses[index];
+              return ListTile(
+                title: Text(address.logradouro),
+                subtitle: Text('${address.bairro}, ${address.localidade}'),
+                onTap: () {
+                  _preencherCamposEndereco(address);
+                  Navigator.pop(context);
+                },
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _preencherCamposEndereco(AddressEntity address) {
+    setState(() {
+      _addressController.text = address.logradouro;
+      _districtController.text = address.bairro;
+      _cityController.text = address.localidade;
+      _stateController.text = address.uf;
+      _cepController.text = address.cep;
+      selectedEstado = address.uf;
+    });
   }
 
   @override
@@ -113,12 +198,12 @@ class _AddContactsPageState extends State<AddContactsPage> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: const Text(''),
+        title: const Text('Adicionar Contato'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Form(
               key: _formKey,
               child: Column(
@@ -137,8 +222,9 @@ class _AddContactsPageState extends State<AddContactsPage> {
                       return null;
                     },
                   ),
+                  const SizedBox(height: 16),
                   TextFormField(
-                    keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.phone,
                     focusNode: _phoneFocus,
                     controller: _phoneController,
                     inputFormatters: [phoneFormatter],
@@ -150,11 +236,12 @@ class _AddContactsPageState extends State<AddContactsPage> {
                         return 'Telefone é obrigatório';
                       }
                       if (value.length < 11) {
-                        return 'Telefone invalido';
+                        return 'Telefone inválido';
                       }
                       return null;
                     },
                   ),
+                  const SizedBox(height: 16),
                   TextFormField(
                     keyboardType: TextInputType.number,
                     focusNode: _cpfFocus,
@@ -172,41 +259,72 @@ class _AddContactsPageState extends State<AddContactsPage> {
                       return null;
                     },
                   ),
-                  TextFormField(
-                    focusNode: _cepFocus,
-                    controller: _cepController,
-                    inputFormatters: [cepFormatter],
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: selectedEstado,
                     decoration: const InputDecoration(
-                      label: Text('CEP'),
+                      labelText: 'Estado (UF)',
                     ),
+                    items: estadosBrasileiros.map((String estado) {
+                      return DropdownMenuItem<String>(
+                        value: estado,
+                        child: Text(estado),
+                      );
+                    }).toList(),
+                    onChanged: (String? novoEstado) {
+                      setState(() {
+                        selectedEstado = novoEstado;
+                        _stateController.text = novoEstado ?? '';
+                      });
+                    },
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'CEP é obrigatório';
-                      }
-                      return null;
-                    },
-                    onChanged: (value) {
-                      value = cepWithoutMask(_cepController.text);
-                      if (value.length == 8) {
-                        context.read<GetAddressBloc>().add(
-                              Address(cep: value),
-                            );
-                      }
-                    },
-                  ),
-                  TextFormField(
-                    focusNode: _addressFocus,
-                    controller: _addressController,
-                    decoration: const InputDecoration(
-                      label: Text('Endereço'),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Endereço é obrigatório';
+                        return 'Estado é obrigatório';
                       }
                       return null;
                     },
                   ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _cityController,
+                    focusNode: _cityFocus,
+                    decoration: const InputDecoration(
+                      labelText: 'Cidade',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Cidade é obrigatória';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          focusNode: _addressFocus,
+                          controller: _addressController,
+                          decoration: const InputDecoration(
+                            label: Text('Trecho do endereço'),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Informe um trecho do endereço';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.search),
+                        onPressed: _buscarEnderecos,
+                        tooltip: 'Buscar endereços',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   TextFormField(
                     focusNode: _districtFocus,
                     controller: _districtController,
@@ -220,28 +338,17 @@ class _AddContactsPageState extends State<AddContactsPage> {
                       return null;
                     },
                   ),
+                  const SizedBox(height: 16),
                   TextFormField(
-                    focusNode: _cityFocus,
-                    controller: _cityController,
+                    focusNode: _cepFocus,
+                    controller: _cepController,
+                    inputFormatters: [cepFormatter],
                     decoration: const InputDecoration(
-                      label: Text('Cidade'),
+                      label: Text('CEP'),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Cidade é obrigatório';
-                      }
-                      return null;
-                    },
-                  ),
-                  TextFormField(
-                    focusNode: _stateFocus,
-                    controller: _stateController,
-                    decoration: const InputDecoration(
-                      label: Text('Estado'),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Estado é obrigatória';
+                        return 'CEP é obrigatório';
                       }
                       return null;
                     },
@@ -275,14 +382,10 @@ class _AddContactsPageState extends State<AddContactsPage> {
                     },
                   ),
                   const SizedBox(height: 24),
-                  //MapSelector(),
                   BlocListener<GetAddressBloc, GetAddressState>(
                     listener: (context, state) {
                       if (state is GetAddressSuccess) {
-                        _addressController.text = state.address.logradouro;
-                        _cityController.text = state.address.localidade;
-                        _districtController.text = state.address.bairro;
-                        _stateController.text = state.address.estado;
+                        _preencherCamposEndereco(state.address);
                       }
                       if (state is GetAddressError) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -293,7 +396,23 @@ class _AddContactsPageState extends State<AddContactsPage> {
                         );
                       }
                     },
-                    child: SizedBox.shrink(),
+                    child: const SizedBox.shrink(),
+                  ),
+                  BlocListener<GetAddressByUfBloc, GetAddressByUfState>(
+                    listener: (context, state) {
+                      if (state is GetAddressByUfSuccess) {
+                        _mostrarDialogoEnderecos(state.addresses);
+                      }
+                      if (state is GetAddressByUfError) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(state.message.toString()),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
+                    child: const SizedBox.shrink(),
                   ),
                   BlocConsumer<AddContactsBloc, AddContactsState>(
                     listener: (context, state) {
@@ -312,8 +431,13 @@ class _AddContactsPageState extends State<AddContactsPage> {
                         _cepController.clear();
                         _latitudeController.clear();
                         _longitudeController.clear();
+                        _phoneController.clear();
+                        _cityController.clear();
+                        _districtController.clear();
+                        setState(() => selectedEstado = null);
+
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
+                          const SnackBar(
                             content: Text('Contato criado com sucesso!'),
                             backgroundColor: Colors.green,
                           ),
@@ -323,9 +447,7 @@ class _AddContactsPageState extends State<AddContactsPage> {
                     },
                     builder: (context, state) {
                       if (state is AddContactsLoading) {
-                        return const CircularProgressIndicator(
-                          color: Colors.white,
-                        );
+                        return const CircularProgressIndicator();
                       }
                       return ElevatedButton(
                         onPressed: () async {

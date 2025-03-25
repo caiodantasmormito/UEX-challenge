@@ -31,5 +31,6 @@ sealed class ContactsInject {
         contactsRepository: context.read<ContactsRepository>(),
       ),
     ),
+    
   ];
 }

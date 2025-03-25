@@ -54,29 +54,16 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await context.push(AddContactsPage.routeName);
-          final userId = FirebaseAuth.instance.currentUser?.uid;
-          if (userId != null) {
-            context
-                .read<GetContactsBloc>()
-                .add(GetDataContacts(userId: userId));
-          }
-        },
-      ),
       appBar: AppBar(
-        title: const Text('Home Page'),
+        backgroundColor: Colors.white,
+        title: const Text('Contatos'),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: InkWell(
-              onTap: () {
-                FirebaseAuth.instance.signOut();
-                context.pushReplacement(LoginPage.routeName);
-              },
-              child: const Icon(Icons.logout),
-            ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              FirebaseAuth.instance.signOut();
+              context.pushReplacement(LoginPage.routeName);
+            },
           )
         ],
       ),
@@ -85,13 +72,16 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(16.0),
               child: TextField(
                 controller: _searchController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: 'Pesquisar por nome ou CPF',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  prefixIcon: const Icon(Icons.search),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 ),
                 onChanged: (value) {
                   setState(() {
@@ -100,144 +90,185 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
             ),
-            BlocConsumer<GetContactsBloc, GetContactsState>(
-              listener: (context, state) {
-                if (state is GetContactsError && state.message != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.message!),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              },
-              builder: (context, state) {
-                if (state is GetContactsLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.black,
-                    ),
-                  );
-                }
-                if (state is GetContactsSuccess) {
-                  final filteredContacts = state.contacts.where((contact) {
-                    return contact.name.toLowerCase().contains(_searchText) ||
-                        contact.cpf.contains(_searchText);
-                  }).toList();
+            Expanded(
+              child: BlocConsumer<GetContactsBloc, GetContactsState>(
+                listener: (context, state) {
+                  if (state is GetContactsError && state.message != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.message!),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+                builder: (context, state) {
+                  if (state is GetContactsLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  if (state is GetContactsSuccess) {
+                    final filteredContacts = state.contacts.where((contact) {
+                      return contact.name.toLowerCase().contains(_searchText) ||
+                          contact.cpf.contains(_searchText);
+                    }).toList();
 
-                  return Expanded(
-                    child: ListView.builder(
-                      itemCount: filteredContacts.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          leading: const Icon(Icons.person),
-                          title: Text(filteredContacts[index].name),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(filteredContacts[index].address),
-                              Row(
+                    if (filteredContacts.isNotEmpty) {
+                      return ListView.builder(
+                        itemCount: filteredContacts.length,
+                        itemBuilder: (context, index) {
+                          final contact = filteredContacts[index];
+                          return Card(
+                            elevation: 3,
+                            color: Colors.white,
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.white,
+                                child: Icon(
+                                  Icons.person,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              title: Text(
+                                contact.name,
+                                style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Column(
+                                spacing: 4,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('${filteredContacts[index].city} / '),
-                                  Text(filteredContacts[index].uf),
+                                  Text(contact.address),
+                                  Text('${contact.city}/${contact.uf}'),
+                                  Text('CPF: ${contact.cpf}'),
+                                  Text('Tel: ${contact.phone}'),
                                 ],
                               ),
-                              Text(filteredContacts[index].cpf),
-                              Text(filteredContacts[index].phone),
-                            ],
-                          ),
-                          trailing: SizedBox(
-                            width: 60,
-                            child: Wrap(
-                              spacing: 3,
-                              children: [
-                                InkWell(
-                                  onTap: () {},
-                                  child: const Icon(Icons.edit),
-                                ),
-                                BlocListener<DeleteContactsBloc,
-                                    DeleteContactsState>(
-                                  listener: (context, state) {
-                                    if (state is DeleteContactsError) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content:
-                                              Text(state.message.toString()),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    }
-                                    if (state is DeleteContactsSuccess) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                              'Contato excluído com sucesso!'),
-                                          backgroundColor: Colors.green,
-                                        ),
-                                      );
-
-                                      final userId = FirebaseAuth
-                                          .instance.currentUser?.uid;
-                                      if (userId != null) {}
-                                    }
-                                  },
-                                  child: InkWell(
-                                    onTap: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                          title:
-                                              const Text('Confirmar exclusão'),
-                                          content: const Text(
-                                            'Tem certeza que deseja excluir este contato?',
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context),
-                                              child: const Text('Cancelar'),
-                                            ),
-                                            TextButton(
-                                              onPressed: () {
-                                                Navigator.pop(context);
-                                                context
-                                                    .read<DeleteContactsBloc>()
-                                                    .add(DeleteContact(
-                                                      contactId:
-                                                          filteredContacts[
-                                                                  index]
-                                                              .id,
-                                                    ));
-                                              },
-                                              child: const Text('Excluir',
-                                                  style: TextStyle(
-                                                      color: Colors.red)),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                    child: const Icon(Icons.delete,
-                                        color: Colors.red),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit,
+                                        color: Colors.black),
+                                    onPressed: () {},
                                   ),
-                                ),
-                              ],
+                                  IconButton(
+                                    icon: const Icon(Icons.delete,
+                                        color: Colors.red),
+                                    onPressed: () {
+                                      _showDeleteDialog(context, contact.id);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                      child: Column(
+                        spacing: 10,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Spacer(flex: 1),
+                          const Icon(
+                            Icons.contact_mail_outlined,
+                            size: 100,
+                            color: Colors.grey,
+                          ),
+                          const Text(
+                            'Nenhum contato disponível',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        );
-                      },
-                    ),
+                          const Text(
+                            'Adicione um novo contato para começar',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          const Spacer(),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onPressed: () async {
+                                await context.push(AddContactsPage.routeName);
+                                final userId =
+                                    FirebaseAuth.instance.currentUser?.uid;
+                                if (userId != null) {
+                                  context
+                                      .read<GetContactsBloc>()
+                                      .add(GetDataContacts(userId: userId));
+                                }
+                              },
+                              child: const Text(
+                                'Criar primeiro contato',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                        ],
+                      ),
+                    );
+                  }
+                  return const Center(
+                    child: Text("Nenhum contato encontrado."),
                   );
-                }
-                return const Center(
-                  child: Text("Nenhum contato encontrado."),
-                );
-              },
+                },
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showDeleteDialog(BuildContext context, String contactId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar exclusão'),
+        content: const Text(
+          'Tem certeza que deseja excluir este contato?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<DeleteContactsBloc>().add(DeleteContact(
+                    contactId: contactId,
+                  ));
+              _refreshContacts();
+            },
+            child: const Text(
+              'Excluir',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
       ),
     );
   }

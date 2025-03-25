@@ -5,15 +5,15 @@ import 'package:uex_app/features/address/data/datasources/get_address_datasource
 import 'package:uex_app/features/address/data/datasources/get_address_datasource_impl.dart';
 import 'package:uex_app/features/address/data/repositories/get_address_repository_impl.dart';
 import 'package:uex_app/features/address/domain/repositories/get_address_repository.dart';
+import 'package:uex_app/features/address/domain/usecases/get_address_by_uf_usecase.dart';
 import 'package:uex_app/features/address/domain/usecases/get_address_usecase.dart';
 
 sealed class AddressInject {
   static final List<Provider> providers = [
     Provider<GetAddressDatasource>(
       create: (context) => GetAddressDatasourceImpl(
-        client: context.read<AuthenticatedClient>(),
-        localStorage: context.read<SharedPreferences>()
-      ),
+          client: context.read<AuthenticatedClient>(),
+          localStorage: context.read<SharedPreferences>()),
     ),
     Provider<GetAddressRepository>(
       create: (context) => GetAddressRepositoryImpl(
@@ -24,6 +24,10 @@ sealed class AddressInject {
         getAddressRepository: context.read<GetAddressRepository>(),
       ),
     ),
-    
+    Provider<GetAddressByUfUsecase>(
+      create: (context) => GetAddressByUfUsecase(
+        repository: context.read<GetAddressRepository>(),
+      ),
+    ),
   ];
 }
