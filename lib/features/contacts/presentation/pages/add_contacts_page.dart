@@ -199,6 +199,7 @@ class _AddContactsPageState extends State<AddContactsPage> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: const Text('Adicionar Contato'),
       ),
       body: SafeArea(

@@ -62,7 +62,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 60),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -192,8 +192,10 @@ class _HomePageState extends State<HomePage> {
                           return Card(
                             elevation: 3,
                             color: Colors.white,
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 5),
+                            margin: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical:
+                                    MediaQuery.of(context).size.height * 0.002),
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: Colors.white,

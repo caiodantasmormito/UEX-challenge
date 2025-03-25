@@ -92,7 +92,6 @@ class _UpdateContactsPageState extends State<UpdateContactsPage> {
   void initState() {
     super.initState();
 
-    
     _nameController = TextEditingController(text: widget.contact.name);
     _cpfController = TextEditingController(text: widget.contact.cpf);
     _phoneController = TextEditingController(text: widget.contact.phone);
@@ -206,6 +205,7 @@ class _UpdateContactsPageState extends State<UpdateContactsPage> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: const Text('Editar Contato'),
       ),
       body: SafeArea(
@@ -258,7 +258,7 @@ class _UpdateContactsPageState extends State<UpdateContactsPage> {
                     decoration: const InputDecoration(
                       label: Text('CPF'),
                     ),
-                    readOnly: true, 
+                    readOnly: true,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'CPF é obrigatório';
