@@ -7,7 +7,7 @@ import 'package:uex_app/features/contacts/presentation/bloc/delete_contacts/dele
 import 'package:uex_app/features/contacts/presentation/bloc/get_contacts/get_contacts_bloc.dart';
 import 'package:uex_app/features/contacts/presentation/pages/add_contacts_page.dart';
 import 'package:uex_app/features/contacts/presentation/pages/edit_contacts_page.dart';
-import 'package:uex_app/features/login/presentation/login_page.dart';
+import 'package:uex_app/features/login/presentation/pages/login_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
