@@ -66,7 +66,33 @@ class ContactsDatasourceImpl implements ContactsDatasource {
         .where('cpf', isEqualTo: cpf)
         .limit(1)
         .get();
-    
+
     return query.docs.isNotEmpty;
+  }
+
+  @override
+  Future<void> updateContacts({required ContactsModel contactsModel}) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('contacts')
+          .doc(contactsModel.id)
+          .update(contactsModel.toMap());
+    } catch (e) {
+      throw UpdateContactsException(message: 'Erro ao atualizar contato');
+    }
+  }
+
+  @override
+  Future<ContactsModel> getContactById(String id) async {
+    try {
+      final doc =
+          await FirebaseFirestore.instance.collection('contacts').doc(id).get();
+      if (doc.exists) {
+        return ContactsModel.fromMap(doc.data()!..['id'] = doc.id);
+      }
+      throw Exception('Contato não encontrado');
+    } catch (e) {
+      throw Exception('Erro ao buscar contato');
+    }
   }
 }

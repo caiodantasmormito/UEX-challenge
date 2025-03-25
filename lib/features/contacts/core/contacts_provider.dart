@@ -6,6 +6,7 @@ import 'package:uex_app/features/contacts/domain/repositories/contacts_repositor
 import 'package:uex_app/features/contacts/domain/usecases/add_contacts_usecase.dart';
 import 'package:uex_app/features/contacts/domain/usecases/delete_contacts_usecase.dart';
 import 'package:uex_app/features/contacts/domain/usecases/get_contacts_usecase.dart';
+import 'package:uex_app/features/contacts/domain/usecases/update_contacts_usecase.dart';
 
 sealed class ContactsInject {
   static final List<Provider> providers = [
@@ -18,6 +19,11 @@ sealed class ContactsInject {
     ),
     Provider<AddContactsUsecase>(
       create: (context) => AddContactsUsecase(
+        repository: context.read<ContactsRepository>(),
+      ),
+    ),
+    Provider<UpdateContactsUsecase>(
+      create: (context) => UpdateContactsUsecase(
         repository: context.read<ContactsRepository>(),
       ),
     ),

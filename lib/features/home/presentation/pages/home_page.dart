@@ -6,6 +6,7 @@ import 'package:uex_app/core/firebase/firebase.dart';
 import 'package:uex_app/features/contacts/presentation/bloc/delete_contacts/delete_contacts_bloc.dart';
 import 'package:uex_app/features/contacts/presentation/bloc/get_contacts/get_contacts_bloc.dart';
 import 'package:uex_app/features/contacts/presentation/pages/add_contacts_page.dart';
+import 'package:uex_app/features/contacts/presentation/pages/edit_contacts_page.dart';
 import 'package:uex_app/features/login/presentation/login_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -118,38 +119,42 @@ class _HomePageState extends State<HomePage> {
         onRefresh: _refreshContacts,
         child: Column(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Pesquisar por nome ou CPF',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Pesquisar por nome ou CPF',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        prefixIcon: const Icon(Icons.search),
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      prefixIcon: const Icon(Icons.search),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                      onChanged: (value) {
+                        setState(() {
+                          _searchText = value.toLowerCase();
+                        });
+                      },
                     ),
-                    onChanged: (value) {
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      _isAscending ? Icons.sort_by_alpha : Icons.sort,
+                      color: Colors.black,
+                    ),
+                    onPressed: () {
                       setState(() {
-                        _searchText = value.toLowerCase();
+                        _isAscending = !_isAscending;
                       });
                     },
                   ),
-                ),
-                IconButton(
-                  icon: Icon(
-                    _isAscending ? Icons.sort_by_alpha : Icons.sort,
-                    color: Colors.black,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _isAscending = !_isAscending;
-                    });
-                  },
-                ),
-              ],
+                ],
+              ),
             ),
             Expanded(
               child: BlocConsumer<GetContactsBloc, GetContactsState>(
@@ -219,7 +224,12 @@ class _HomePageState extends State<HomePage> {
                                   IconButton(
                                     icon: const Icon(Icons.edit,
                                         color: Colors.black),
-                                    onPressed: () {},
+                                    onPressed: () async {
+                                      await context.push(
+                                        UpdateContactsPage.routeName,
+                                        extra: contact,
+                                      );
+                                    },
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.delete,

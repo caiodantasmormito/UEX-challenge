@@ -59,4 +59,29 @@ class ContactsRepositoryImpl implements ContactsRepository {
       throw AddContactsException(message: 'Erro ao verificar CPF');
     }
   }
+
+  @override
+  Future<(Failure?, NoParams?)> updateContact(
+      {required ContactsEntity contact}) async {
+    try {
+      await _contactsDataSource.updateContacts(
+          contactsModel: contact.toModel());
+      return (null, null);
+    } on UpdateContactsException catch (error) {
+      return (
+        UpdateContactsFailure(message: error.message),
+        null,
+      );
+    }
+  }
+
+  @override
+  Future<ContactsEntity> getContactById(String id) async {
+    try {
+      final contactModel = await _contactsDataSource.getContactById(id);
+      return contactModel.toModel();
+    } catch (e) {
+      throw Exception('Erro ao buscar contato por ID');
+    }
+  }
 }

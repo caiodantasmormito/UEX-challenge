@@ -12,3 +12,7 @@ final class GetContactsFailure extends Failure {
 final class DeleteContactsFailure extends Failure {
   const DeleteContactsFailure({super.message});
 }
+
+final class UpdateContactsFailure extends Failure {
+  const UpdateContactsFailure({super.message});
+}

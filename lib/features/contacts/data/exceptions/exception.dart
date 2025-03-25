@@ -12,3 +12,8 @@ class DeleteContactsException implements Exception {
   const DeleteContactsException({required this.message});
   final String message;
 }
+
+class UpdateContactsException implements Exception {
+  const UpdateContactsException({required this.message});
+  final String message;
+}

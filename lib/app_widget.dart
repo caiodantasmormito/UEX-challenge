@@ -37,11 +37,6 @@ class AppWidget extends StatelessWidget {
               useCase: context.read<DeleteContactsUsecase>(),
             ),
           ),
-          /*BlocProvider(
-            create: (context) => GetAddressByUfBloc(
-              useCase: context.read<GetAddressByUfUsecase>(),
-            ),
-          ),*/
         ],
         child: MaterialApp.router(
           title: 'UEX App',

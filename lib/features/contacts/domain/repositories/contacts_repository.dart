@@ -8,5 +8,6 @@ abstract class ContactsRepository {
   Future<(Failure?, List<ContactsEntity>?)> getContacts(String userId);
   Future<(Failure?, NoParams?)> deleteContact(String contactId);
   Future<bool> verifyCpfExists(String cpf);
-
+  Future<(Failure?, NoParams?)> updateContact({required ContactsEntity contact});
+  Future<ContactsEntity> getContactById(String id);
 }
