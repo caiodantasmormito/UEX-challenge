@@ -159,6 +159,7 @@ class _AddContactsPageState extends State<AddContactsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
         title: const Text('Selecione um endereço'),
         content: SizedBox(
           width: double.maxFinite,
@@ -306,11 +307,11 @@ class _AddContactsPageState extends State<AddContactsPage> {
                           focusNode: _addressFocus,
                           controller: _addressController,
                           decoration: const InputDecoration(
-                            label: Text('Trecho do endereço'),
+                            label: Text('Endereço'),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Informe um trecho do endereço';
+                              return 'Informe um endereço';
                             }
                             return null;
                           },

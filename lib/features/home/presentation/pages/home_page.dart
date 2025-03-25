@@ -321,7 +321,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.white,
         title: const Text('Excluir conta'),
         content: Form(
-          key: formKey, // Associa o Form ao GlobalKey
+          key: formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
