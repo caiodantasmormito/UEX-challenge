@@ -435,8 +435,12 @@ class _AddContactsPageState extends State<AddContactsPage> {
                         _cityController.clear();
                         _districtController.clear();
                         setState(() => selectedEstado = null);
-
-                        
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Contato criado com sucesso!'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
                         Navigator.pop(context);
                       }
                     },
